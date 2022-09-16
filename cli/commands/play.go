@@ -118,7 +118,7 @@ func (gameState *GameState) initialize() {
 
 	// Set up HTTP client with request timeout
 	if gameState.Timeout == 0 {
-		gameState.Timeout = 500
+		gameState.Timeout = 5000
 	}
 	gameState.httpClient = http.Client{
 		Timeout: time.Duration(gameState.Timeout) * time.Millisecond,
@@ -516,8 +516,14 @@ func (gameState *GameState) buildSnakesFromOptions() map[string]SnakeState {
 		snakeState := SnakeState{
 			Name: snakeName, URL: snakeURL, ID: id, LastMove: "up", Character: bodyChars[i%8],
 		}
+
+		req, err := http.NewRequest("GET", snakeURL, nil)
+
+		req.Header.Add("accept", "application/json")
+
+		res, _ := http.DefaultClient.Do(req)
+
 		var snakeErr error
-		res, err := gameState.httpClient.Get(snakeURL)
 		if err != nil {
 			log.ERROR.Fatalf("Snake metadata request to %v failed: %v", snakeURL, err)
 		}
